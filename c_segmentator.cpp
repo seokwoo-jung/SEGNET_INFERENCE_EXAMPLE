@@ -91,16 +91,15 @@ cv::Mat C_SEGMENTATOR::Predict(const cv::Mat& img) {
     const caffe::shared_ptr<Blob<float> > prob = net_->blob_by_name("prob");
     float* prob_addr = prob->mutable_cpu_data();
 
-    vector<int* > label;
+    vector<cv::Vec3b> label;
 
     for(uint class_index = 0; class_index < label_rgb_data_list.size(); class_index++)
     {
-        int class_rgb_color[3];
+        cv::Vec3b class_rgb_color;
         class_rgb_color[0] = (int)label_rgb_data_list.at(class_index).first.x;
         class_rgb_color[1] = (int)label_rgb_data_list.at(class_index).first.y;
         class_rgb_color[2] = (int)label_rgb_data_list.at(class_index).first.z;
         label.push_back(class_rgb_color);
-        cout << label.at(class_index)[0] << "," <<label.at(class_index)[1] << "," << label.at(class_index)[2] << endl;
     }
 
     cv::Mat result_img = cv::Mat::zeros(input_geometry_.height,input_geometry_.width,CV_8UC3);
@@ -122,7 +121,6 @@ cv::Mat C_SEGMENTATOR::Predict(const cv::Mat& img) {
               {
                   if(prob_max.at<cv::Vec2f>(y,x)[0] >= cf_thres)
                   {
-                      // Get overall segmentation img
                       result_img.at<cv::Vec3b>(y,x)[0] = label.at(prob_max.at<cv::Vec2f>(y,x)[1])[2];
                       result_img.at<cv::Vec3b>(y,x)[1] = label.at(prob_max.at<cv::Vec2f>(y,x)[1])[1];
                       result_img.at<cv::Vec3b>(y,x)[2] = label.at(prob_max.at<cv::Vec2f>(y,x)[1])[0];
